@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azahar Compatibility List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0f172a; 
+            color: #f8fafc; 
+            margin: 0;
+        }
+
+        .glass { 
+            background: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-bubble {
+            transition: all 0.2s ease;
+        }
+
+        .stat-bubble:hover {
+            background: rgba(51, 65, 85, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .stat-bubble.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        
+        @keyframes custom-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-custom-spin {
+            animation: custom-spin 1s linear infinite;
+        }
+
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden bg-slate-950 pt-16 pb-20 px-4">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-0 -left-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+            <div class="absolute top-0 -right-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+        </div>
+        
+        <div class="relative max-w-6xl mx-auto text-center">
+            <img src="https://azahar-emu.org/resources/images/logo/azahar-name-and-logo.svg" 
+                 alt="Azahar Emulator" 
+                 class="h-24 md:h-40 mx-auto mb-10 drop-shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+            
+            <h1 class="text-3xl md:text-4xl font-bold mb-6 tracking-tight text-white">
+                Compatibility List
+            </h1>
+            <p class="text-slate-400 text-xl max-w-2xl mx-auto leading-relaxed">
+                A visual database tracking the progress and playability of 3DS titles on the Azahar emulator.
+            </p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 -mt-10 relative z-10">
+        <!-- Search & Filter Bar -->
+        <div class="glass rounded-3xl p-4 mb-8 flex flex-col md:flex-row gap-4 shadow-2xl">
+            <div class="relative flex-grow">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                <input type="text" id="searchInput" placeholder="Search by game name or Title ID..." 
+                    class="w-full bg-slate-900/80 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white placeholder-slate-500">
+            </div>
+            
+            <div class="flex gap-2 min-w-[200px]">
+                <select id="statusFilter" class="w-full bg-slate-900/80 border border-slate-700 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-white appearance-none cursor-pointer">
+                    <option value="all">📊 All Ratings</option>
+                    <option value="0">✅ Perfect</option>
+                    <option value="1">🟢 Great</option>
+                    <option value="2">🟡 Okay</option>
+                    <option value="3">🟠 Bad</option>
+                    <option value="4">🔴 Intro/Menu</option>
+                    <option value="5">💀 Won't Boot</option>
+                    <option value="99">❓ Not Tested</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Detailed Stats Summary (Interactive Bubbles) -->
+        <div id="statsPanel" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 mb-10 opacity-0 transition-opacity duration-500">
+            <div onclick="quickFilter('all')" class="stat-bubble glass p-2 rounded-xl text-center border-b-2 border-b-blue-500 cursor-pointer active" data-filter="all">
+                <p class="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-0.5">Total</p>
+                <p id="stat_total" class="text-lg font-bold text-white">-</p>
+            </div>
+            <div onclick="quickFilter('0')" class="stat-bubble glass p-2 rounded-xl text-center border-b-2 border-b-green-500 cursor-pointer" data-filter="0">
+                <p class="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-0.5">Perfect</p>
+                <p id="stat_0" class="text-lg font-bold text-green-400">-</p>
+            </div>
+            <div onclick="quickFilter('1')" class="stat-bubble glass p-2 rounded-xl text-center border-b-2 border-b-emerald-400 cursor-pointer" data-filter="1">
+                <p class="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-0.5">Great</p>
+                <p id="stat_1" class="text-lg font-bold text-emerald-400">-</p>
+            </div>
+            <div onclick="quickFilter('2')" class="stat-bubble glass p-2 rounded-xl text-center border-b-2 border-b-yellow-500 cursor-pointer" data-filter="2">
+                <p class="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-0.5">Okay</p>
+                <p id="stat_2" class="text-lg font-bold text-yellow-400">-</p>
+            </div>
+            <div onclick="quickFilter('3')" class="stat-bubble glass p-2 rounded-xl text-center border-b-2 border-b-orange-500 cursor-pointer" data-filter="3">
+                <p class="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-0.5">Bad</p>
+                <p id="stat_3" class="text-lg font-bold text-orange-400">-</p>
+            </div>
+            <div onclick="quickFilter('4')" class="stat-bubble glass p-2 rounded-xl text-center border-b-2 border-b-red-500 cursor-pointer" data-filter="4">
+                <p class="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-0.5">Intro</p>
+                <p id="stat_4" class="text-lg font-bold text-red-400">-</p>
+            </div>
+            <div onclick="quickFilter('5')" class="stat-bubble glass p-2 rounded-xl text-center border-b-2 border-b-slate-900 cursor-pointer" data-filter="5">
+                <p class="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-0.5">No Boot</p>
+                <p id="stat_5" class="text-lg font-bold text-red-600">-</p>
+            </div>
+            <div onclick="quickFilter('99')" class="stat-bubble glass p-2 rounded-xl text-center border-b-2 border-b-slate-600 cursor-pointer" data-filter="99">
+                <p class="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-0.5">Untested</p>
+                <p id="stat_99" class="text-lg font-bold text-slate-400">-</p>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="flex flex-col items-center justify-center py-32">
+            <div class="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-custom-spin mb-6"></div>
+            <p class="text-slate-400 font-medium animate-pulse text-lg">Syncing with Azahar database...</p>
+        </div>
+
+        <!-- Results Grid -->
+        <div id="gameGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamic content injected here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="noResults" class="hidden flex flex-col items-center justify-center py-32 text-center">
+            <div class="w-24 h-24 bg-slate-800/50 rounded-full flex items-center justify-center mb-6">
+                <i class="fa-solid fa-magnifying-glass-minus text-4xl text-slate-600"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-300 mb-2">No matching titles</h3>
+            <p class="text-slate-500">Try adjusting your filters or search terms.</p>
+        </div>
+    </div>
+
+    <script>
+        const JSON_URL = 'https://raw.githubusercontent.com/azahar-emu/compatibility-list/refs/heads/master/compatibility_list.json';
+        
+        const THEMES = {
+            0: { label: 'Perfect', color: 'bg-green-500', shadow: 'shadow-green-500/20', icon: 'fa-check-double', desc: 'Runs flawlessly at full speed.' },
+            1: { label: 'Great', color: 'bg-emerald-500', shadow: 'shadow-emerald-500/20', icon: 'fa-check', desc: 'Playable with minor audio/visual glitches.' },
+            2: { label: 'Okay', color: 'bg-yellow-500', shadow: 'shadow-yellow-500/20', icon: 'fa-circle-exclamation', desc: 'Significant glitches or performance drops.' },
+            3: { label: 'Bad', color: 'bg-orange-500', shadow: 'shadow-orange-500/20', icon: 'fa-triangle-exclamation', desc: 'Severe issues, difficult to play.' },
+            4: { label: 'Intro/Menu', color: 'bg-red-500', shadow: 'shadow-red-500/20', icon: 'fa-rectangle-list', desc: 'Loads menus but crashes during gameplay.' },
+            5: { label: 'Won\'t Boot', color: 'bg-slate-900 border-2 border-red-600', shadow: 'shadow-red-900/20', icon: 'fa-skull', desc: 'Does not load or crashes immediately.' },
+            99: { label: 'Not Tested', color: 'bg-slate-600', shadow: 'shadow-slate-500/10', icon: 'fa-question', desc: 'No compatibility reports yet.' }
+        };
+
+        let masterData = [];
+
+        // Helper to remove accents/diacritics (e.g., Pokémon -> Pokemon)
+        function normalizeText(text) {
+            return text.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
+        async function init() {
+            try {
+                const response = await fetch(JSON_URL);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                
+                masterData = Object.entries(data).map(([id, item]) => {
+                    const name = item.title || 
+                               item.name || 
+                               (item.info && (item.info.title || item.info.name)) || 
+                               (item.information && (item.information.title || item.information.name)) || 
+                               id;
+
+                    return { 
+                        title_id: id, 
+                        compatibility: item.compatibility !== undefined ? item.compatibility : 99,
+                        name: name,
+                        searchName: normalizeText(name),
+                        searchId: normalizeText(id)
+                    };
+                });
+
+                masterData.sort((a, b) => a.name.localeCompare(b.name));
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('statsPanel').classList.replace('opacity-0', 'opacity-100');
+                
+                updateStats(masterData);
+                render(masterData);
+            } catch (err) {
+                document.getElementById('loading').innerHTML = `
+                    <div class="glass p-8 rounded-3xl border-red-500/50 max-w-md mx-auto">
+                        <i class="fa-solid fa-circle-exclamation text-4xl text-red-500 mb-4"></i>
+                        <h2 class="text-xl font-bold mb-2">Sync Error</h2>
+                        <p class="text-slate-400 mb-6 text-sm">Failed to parse compatibility list. Ensure the GitHub URL is accessible.</p>
+                        <button onclick="location.reload()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-colors">Retry</button>
+                    </div>
+                `;
+                console.error('Fetch Error:', err);
+            }
+        }
+
+        function updateStats(data) {
+            const counts = {
+                total: data.length,
+                0: data.filter(g => g.compatibility === 0).length,
+                1: data.filter(g => g.compatibility === 1).length,
+                2: data.filter(g => g.compatibility === 2).length,
+                3: data.filter(g => g.compatibility === 3).length,
+                4: data.filter(g => g.compatibility === 4).length,
+                5: data.filter(g => g.compatibility === 5).length,
+                99: data.filter(g => g.compatibility === 99).length
+            };
+
+            document.getElementById('stat_total').innerText = counts.total;
+            document.getElementById('stat_0').innerText = counts[0];
+            document.getElementById('stat_1').innerText = counts[1];
+            document.getElementById('stat_2').innerText = counts[2];
+            document.getElementById('stat_3').innerText = counts[3];
+            document.getElementById('stat_4').innerText = counts[4];
+            document.getElementById('stat_5').innerText = counts[5];
+            document.getElementById('stat_99').innerText = counts[99];
+        }
+
+        function quickFilter(status) {
+            document.getElementById('statusFilter').value = status;
+            
+            document.querySelectorAll('.stat-bubble').forEach(b => {
+                if (b.getAttribute('data-filter') === status) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+            
+            filter();
+        }
+
+        function render(list) {
+            const grid = document.getElementById('gameGrid');
+            const empty = document.getElementById('noResults');
+            grid.innerHTML = '';
+
+            if (list.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            list.forEach((game) => {
+                const theme = THEMES[game.compatibility] || THEMES[99];
+                const card = document.createElement('div');
+                card.className = 'glass rounded-3xl p-6 card-hover flex flex-col h-full';
+                
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold mb-6 text-white leading-snug line-clamp-2" title="${game.name}">
+                        ${game.name}
+                    </h3>
+
+                    <div class="mt-auto">
+                        <div class="flex items-center gap-4 mb-3">
+                            <div class="w-12 h-12 rounded-2xl ${theme.color} ${theme.shadow} flex items-center justify-center text-white shadow-lg text-lg">
+                                <i class="fa-solid ${theme.icon}"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-black text-slate-100 uppercase tracking-wide">${theme.label}</p>
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Rating: ${game.compatibility}</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed italic border-t border-slate-700/50 pt-3">
+                            ${theme.desc}
+                        </p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filter() {
+            const rawQuery = document.getElementById('searchInput').value;
+            const query = normalizeText(rawQuery);
+            const status = document.getElementById('statusFilter').value;
+
+            document.querySelectorAll('.stat-bubble').forEach(b => {
+                if (b.getAttribute('data-filter') === status) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+
+            const filtered = masterData.filter(g => {
+                const nameMatch = g.searchName.includes(query) || 
+                                 g.searchId.includes(query);
+                const statusMatch = status === 'all' || (g.compatibility !== undefined && g.compatibility.toString() === status);
+                return nameMatch && statusMatch;
+            });
+            render(filtered);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', filter);
+        document.getElementById('statusFilter').addEventListener('change', filter);
+
+        init();
+    </script>
+</body>
+</html>
